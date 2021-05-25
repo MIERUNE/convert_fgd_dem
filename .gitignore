@@ -141,3 +141,5 @@ cython_debug/
 
 # another
 .idea
+/test_generated_files/
+/target_files/
