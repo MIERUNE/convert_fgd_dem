@@ -9,7 +9,6 @@ flake8 = "*"
 isort = "*"
 
 [packages]
-click = "==7.1.2"
 numpy = "==1.20.1"
 
 [requires]
