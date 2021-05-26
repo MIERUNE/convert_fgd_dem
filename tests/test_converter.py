@@ -3,7 +3,7 @@ from pathlib import Path
 
 from osgeo import gdal, gdalconst
 
-from convert_fgd_dem import Converter
+from src.convert_fgd_dem import Converter
 
 
 class TestConverter(unittest.TestCase):

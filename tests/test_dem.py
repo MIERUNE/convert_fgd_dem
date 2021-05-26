@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from convert_fgd_dem import Dem
+from src.convert_fgd_dem import Dem
 
 
 class TestDem(unittest.TestCase):
