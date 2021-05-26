@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np
 from osgeo import gdal
 
-from src.convert_fgd_dem.dem import Dem
-from src.convert_fgd_dem.geotiff import Geotiff
+from .dem import Dem
+from .geotiff import Geotiff
 
 
 class Converter:
