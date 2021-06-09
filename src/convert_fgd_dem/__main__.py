@@ -33,6 +33,14 @@ from src.convert_fgd_dem import Converter
     help="terrain rgbを作成するか選択 default=False",
 )
 def main(import_path, output_path, output_epsg, rgbify):
+    if rgbify:
+        converter = Converter(
+            import_path=import_path,
+            output_path=output_path,
+            output_epsg=output_epsg,
+            rgbify=False,
+        )
+        converter.dem_to_geotiff()
     converter = Converter(
         import_path=import_path,
         output_path=output_path,
@@ -40,6 +48,7 @@ def main(import_path, output_path, output_epsg, rgbify):
         rgbify=rgbify,
     )
     converter.dem_to_geotiff()
+
 
 
 if __name__ == "__main__":
