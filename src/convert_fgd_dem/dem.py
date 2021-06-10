@@ -12,8 +12,10 @@ class Dem:
 
     def __init__(self, import_path):
         """Initializer
+
         Args:
             import_path (Path): Path object of import path
+
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
             "Content" refers to mesh code, metadata, and elevation values.
@@ -34,6 +36,7 @@ class Dem:
 
     def _unzip_dem(self, dest_dir):
         """Unzip the zip file containing the DEM
+
         Args:
             dest_dir (Path): Path object of unzip directory
         """
@@ -65,8 +68,10 @@ class Dem:
 
     def _get_xml_paths(self):
         """Create a list of xml Path objects from the specified path
+
         Returns:
             list: List containing xml paths
+
         """
         if self.import_path.is_dir():
             xml_paths = [
@@ -92,10 +97,13 @@ class Dem:
     @staticmethod
     def _format_metadata(raw_metadata):
         """Format the raw metadata
+
         Args:
             raw_metadata (dict): A dictionary containing raw metadata retrieved from xml
+
         Returns:
             dict: A dictionary containing processed metadata
+
         """
         lowers = raw_metadata["lower_corner"].split(" ")
         lower_corner = {"lat": float(lowers[0]), "lon": float(lowers[1])}
@@ -133,8 +141,10 @@ class Dem:
 
     def get_xml_content(self, xml_path):
         """Read xml to get mesh code, metadata and elevation value
+
         Args:
             xml_path (Path): Path object of xml path
+
         Returns:
             dict: A dictionary containing mesh code, metadata, and elevation values
         """
@@ -200,6 +210,7 @@ class Dem:
     def _check_mesh_codes(self):
         """
         Check for overlap between secondary and tertiary meshes
+
         Raises:
             - Error if the mesh code is other than 6 or 8 digits
             - Error when secondary and tertiary meshes are mixed
@@ -254,8 +265,10 @@ class Dem:
     @staticmethod
     def _get_np_array(content):
         """Gets the elevation value from Dem and returns the mesh code and elevation value (np.array)
+
         Args:
             content(dict): Dictionary containing detailed information of DEM
+
         Returns:
             dict: A dictionary containing mesh code and elevation values (np.array)
         """

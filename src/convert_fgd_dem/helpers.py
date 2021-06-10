@@ -6,16 +6,18 @@ from osgeo import gdal
 
 
 def warp(
-        source_path=None,
-        file_name="output.tif",
-        output_path=None,
-        epsg="EPSG:3857",
-        no_data_value=-9999):
+    file_name,
+    source_path=None,
+    output_path=None,
+    epsg="EPSG:3857",
+    no_data_value=-9999
+):
     """
     Create new GeoTiff from EPSG: 4326 Tiff
+
     Args:
-        source_path (Path or None): Path object of source file
         file_name (str): string of file name
+        source_path (Path or None): Path object of source file
         output_path (Path or None): Path object of file output path
         epsg (str): string of epsg
         no_data_value (int): integer of no data value
@@ -50,6 +52,7 @@ def warp(
 def convert_height_to_R(height, no_data_value=-9999):
     """
     Convert height to R value of RGB
+
     Args:
         height (int): integer of height
     """
@@ -64,6 +67,7 @@ def convert_height_to_R(height, no_data_value=-9999):
 def convert_height_to_G(height, r_value, no_data_value=-9999):
     """
     Convert height to G value of RGB
+
     Args:
         height (int): integer of height
     """
@@ -79,6 +83,7 @@ def convert_height_to_G(height, r_value, no_data_value=-9999):
 def convert_height_to_B(height, r_value, g_value, no_data_value=-9999):
     """
     Convert height to B value of RGB
+
     Args:
         height (int): integer of height
     """

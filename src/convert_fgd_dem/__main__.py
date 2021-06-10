@@ -1,6 +1,6 @@
 import click
 
-from src.convert_fgd_dem import Converter
+from convert_fgd_dem import Converter
 
 
 @click.command()
@@ -33,23 +33,23 @@ from src.convert_fgd_dem import Converter
     help="terrain rgbを作成するか選択 default=False",
 )
 def main(import_path, output_path, output_epsg, rgbify):
-    if rgbify:
-        converter = Converter(
-            import_path=import_path,
-            output_path=output_path,
-            output_epsg=output_epsg,
-            rgbify=False,
-        )
-        converter.dem_to_geotiff()
-    converter = Converter(
+    geotiff_converter = Converter(
         import_path=import_path,
         output_path=output_path,
         output_epsg=output_epsg,
-        rgbify=rgbify,
+        file_name='output.tif',
+        rgbify=False,
     )
-    converter.dem_to_geotiff()
-
-
+    geotiff_converter.dem_to_geotiff()
+    if rgbify:
+        rgbify_converter = Converter(
+            import_path=import_path,
+            output_path=output_path,
+            output_epsg=output_epsg,
+            file_name='output_TerrainRFB.tif',
+            rgbify=rgbify,
+        )
+        rgbify_converter.dem_to_geotiff()
 
 if __name__ == "__main__":
     main()

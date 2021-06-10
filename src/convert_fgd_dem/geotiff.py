@@ -22,12 +22,14 @@ class Geotiff:
             y_length,
             output_path):
         """Initializer
+
         Args:
             geo_transform (list): Data for SetGeoTransform in Gdal's Dataset class
             np_array (numpy.ndarray): dem numpy array
             x_length (int): image size of x
             y_length (int): iamge size of y
             output_path (Path): Path object of file output path
+
         Notes:
             The contents of geo_transform list are as follows
             geo_transform = [Top left longitude, east-west resolution, rotation, top left latitude, rotation, north-south resolution]
@@ -47,6 +49,7 @@ class Geotiff:
         no_data_value=-9999
     ):
         """Write numpy array on raster bands
+
         Args:
             rgbify (bool): whether to generate TerrainRGB or not
             band_count (int): number of bands
@@ -77,11 +80,12 @@ class Geotiff:
         self,
         band_count,
         dtype,
-        file_name="output.tif",
+        file_name,
         no_data_value=-9999,
         rgbify=False
     ):
         """Create GeoTiff from elevation and coordinates, pixel size, grid size
+
         Args:
             band_count (int): number of bands
             dtype (int): integer of gdal data type
@@ -118,14 +122,15 @@ class Geotiff:
 
     def resampling(
             self,
+            file_name,
             source_path=None,
-            file_name="output.tif",
             epsg="EPSG:3857",
             no_data_value=-9999):
         """Create new GeoTiff from EPSG: 4326 Tiff
+
         Args:
-            source_path (Path): Path object of source file
             file_name (str): string of file name
+            source_path (Path): Path object of source file
             epsg (str): string of epsg
             no_data_value (int): integer of no data value
         """
