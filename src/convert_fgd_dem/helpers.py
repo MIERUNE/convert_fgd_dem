@@ -42,7 +42,7 @@ def warp(
         srcSRS="EPSG:4326",
         dstSRS=epsg,
         dstNodata=no_data_value,
-        resampleAlg="near"
+        resampleAlg="bilinear"
     )
     resampled_ras.FlushCache()
 
