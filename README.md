@@ -33,7 +33,7 @@ Run the tool with downloaded "xml" or "directory containing .xml" or ".zip conta
 ```python
 from pathlib import Path
 
-from convert_fgd_dem import Dem
+from src.convert_fgd_dem import Dem
 
 
 def main():

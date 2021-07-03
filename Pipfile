@@ -9,7 +9,7 @@ flake8 = "*"
 isort = "*"
 
 [packages]
-numpy = "==1.20.1"
+numpy = ">=1.20.1"
 
 [requires]
 python_version = "3.9"

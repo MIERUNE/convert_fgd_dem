@@ -4,6 +4,7 @@ from osgeo import gdal, osr
 import numpy as np
 
 from .helpers import (
+    DemOutputTiffException,
     convert_height_to_R,
     convert_height_to_G,
     convert_height_to_B,
@@ -98,14 +99,17 @@ class Geotiff:
         created_tiff_path = self.output_path / file_name
 
         driver = gdal.GetDriverByName("GTiff")
-        dst_ds = driver.Create(
-            str(created_tiff_path.resolve()),
-            self.x_length,
-            self.y_length,
-            band_count,
-            dtype
-        )
-        dst_ds.SetGeoTransform(self.geo_transform)
+        try:
+            dst_ds = driver.Create(
+                str(created_tiff_path.resolve()),
+                self.x_length,
+                self.y_length,
+                band_count,
+                dtype
+            )
+            dst_ds.SetGeoTransform(self.geo_transform)
+        except AttributeError:
+            raise DemOutputTiffException("出力先パスに問題がある可能性があります")
 
         self.write_raster_bands(
             rgbify,

@@ -6,6 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .helpers import DemInputXmlException
+
 
 class Dem:
     """Retrieve metadata from DEM xml"""
@@ -77,7 +79,7 @@ class Dem:
             xml_paths = [
                 xml_path for xml_path in self.import_path.glob("*.xml")]
             if xml_paths is None:
-                raise Exception("指定ディレクトリに.xmlが存在しません")
+                raise DemInputXmlException("指定ディレクトリに.xmlが存在しません")
 
         elif self.import_path.suffix == ".xml":
             xml_paths = [self.import_path]
@@ -88,9 +90,9 @@ class Dem:
             xml_paths = [
                 xml_path for xml_path in extract_dir.glob("*.xml")]
             if not xml_paths:
-                raise Exception("指定のパスにxmlファイルが存在しません")
+                raise DemInputXmlException("指定のパスにxmlファイルが存在しません")
         else:
-            raise Exception(
+            raise DemInputXmlException(
                 "指定できる形式は「xml」「.xmlが格納されたディレクトリ」「.xmlが格納された.zip」のみです")
         return xml_paths
 
@@ -149,20 +151,24 @@ class Dem:
             dict: A dictionary containing mesh code, metadata, and elevation values
         """
         if not xml_path.suffix == ".xml":
-            raise Exception("指定できる形式は.xmlのみです")
+            raise DemInputXmlException("指定できる形式は.xmlのみです")
 
         name_space = {
             "dataset": "http://fgd.gsi.go.jp/spec/2008/FGD_GMLSchema",
             "gml": "http://www.opengis.net/gml/3.2",
         }
 
-        tree = et.parse(xml_path)
-        root = tree.getroot()
-
-        mesh_code = int(
-            root.find(
-                "dataset:DEM//dataset:mesh",
-                name_space).text)
+        try:
+            tree = et.parse(xml_path)
+            root = tree.getroot()
+            mesh_code = int(
+                root.find(
+                    "dataset:DEM//dataset:mesh",
+                    name_space
+                ).text
+            )
+        except et.ParseError:
+            raise DemInputXmlException("不正なxmlです")
 
         raw_metadata = {
             "mesh_code": mesh_code,
@@ -225,11 +231,10 @@ class Dem:
             elif len(str_mesh) == 8:
                 third_mesh_codes.append(mesh_code)
             else:
-                raise Exception(f"メッシュコードが不正です。mesh_code={mesh_code}")
+                raise DemInputXmlException(f"メッシュコードが不正です。mesh_code={mesh_code}")
 
-        # どちらもTrue、つまり要素が存在しているときにraise
         if all((third_mesh_codes, second_mesh_codes)):
-            raise Exception("2次メッシュと3次メッシュが混合しています。")
+            raise DemInputXmlException("2次メッシュと3次メッシュが混合しています。")
 
     def _get_xml_content_list(self):
         """Create a list of metadata and elevation values"""
