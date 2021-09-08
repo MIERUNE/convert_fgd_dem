@@ -5,6 +5,16 @@ import shutil
 from osgeo import gdal
 
 
+class DemInputXmlException(Exception):
+    """Exception class about input DEM xml"""
+    pass
+
+
+class DemOutputTiffException(Exception):
+    """Exception class about input DEM xml"""
+    pass
+
+
 def warp(
     file_name,
     source_path=None,

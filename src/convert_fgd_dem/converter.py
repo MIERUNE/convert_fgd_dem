@@ -171,7 +171,7 @@ class Converter:
         geotiff = Geotiff(*data_for_geotiff)
 
         if self.rgbify:
-            root, ext = os.path.splitext(self.file_name)
+            os.path.splitext(self.file_name)
             geotiff.create(
                 3,
                 gdal.GDT_Byte,
