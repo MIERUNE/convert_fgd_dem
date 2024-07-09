@@ -100,7 +100,8 @@ class Converter:
         x_length = image_size[0]
         y_length = image_size[1]
 
-        if x_length >= 10000 or y_length >= 10000:
+        if x_length >= 32000 or y_length >= 32000:
+            # set to a 4GB maximum tiff size
             raise Exception(f"セルサイズが大きすぎます。x={x_length}・y={y_length}")
 
         # Create an array that covers all xml
