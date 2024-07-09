@@ -61,7 +61,8 @@ class Dem:
                     except shutil.Error:
                         print(
                             f"ファイルがすでに存在しています。"
-                            f"ファイルの移動をスキップし、オリジナルファイルを削除します：{dest_dir / path}")
+                            f"ファイルの移動をスキップし、オリジナルファイルを削除します：{dest_dir / path}"
+                        )
                         os.remove(dest_dir / path)
                         continue
             # Deleted the directory with the same name as the parent folder
@@ -75,9 +76,18 @@ class Dem:
             list: List containing xml paths
 
         """
-        if self.import_path.is_dir():
+
+        # Multi xml file (input: "path/to/fil21.xml" "path/to/file2.xml"...)
+        if self.import_path.suffix == '.xml"':
+            xml_paths = str(self.import_path).split('" "')
             xml_paths = [
-                xml_path for xml_path in self.import_path.glob("*.xml")]
+                Path(xml_path.strip('"'))
+                for xml_path in xml_paths
+                if xml_path.endswith(".xml")
+            ]
+
+        elif self.import_path.is_dir():
+            xml_paths = [xml_path for xml_path in self.import_path.glob("*.xml")]
             if xml_paths is None:
                 raise DemInputXmlException("指定ディレクトリに.xmlが存在しません")
 
@@ -87,13 +97,14 @@ class Dem:
         elif self.import_path.suffix == ".zip":
             extract_dir = self.import_path.parent / self.import_path.stem
             self._unzip_dem(extract_dir)
-            xml_paths = [
-                xml_path for xml_path in extract_dir.glob("*.xml")]
+            xml_paths = [xml_path for xml_path in extract_dir.glob("*.xml")]
             if not xml_paths:
                 raise DemInputXmlException("指定のパスにxmlファイルが存在しません")
+
         else:
             raise DemInputXmlException(
-                "指定できる形式は「xml」「.xmlが格納されたディレクトリ」「.xmlが格納された.zip」のみです")
+                "指定できる形式は「xml」「.xmlが格納されたディレクトリ」「.xmlが格納された.zip」のみです"
+            )
         return xml_paths
 
     @staticmethod
@@ -120,14 +131,8 @@ class Dem:
         start_point = {"x": int(start_points[0]), "y": int(start_points[1])}
 
         pixel_size = {
-            "x": (
-                upper_corner["lon"] -
-                lower_corner["lon"]) /
-            grid_length["x"],
-            "y": (
-                lower_corner["lat"] -
-                upper_corner["lat"]) /
-            grid_length["y"],
+            "x": (upper_corner["lon"] - lower_corner["lon"]) / grid_length["x"],
+            "y": (lower_corner["lat"] - upper_corner["lat"]) / grid_length["y"],
         }
 
         meta_data = {
@@ -161,12 +166,7 @@ class Dem:
         try:
             tree = et.parse(xml_path)
             root = tree.getroot()
-            mesh_code = int(
-                root.find(
-                    "dataset:DEM//dataset:mesh",
-                    name_space
-                ).text
-            )
+            mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
         except et.ParseError:
             raise DemInputXmlException("不正なxmlです")
 
@@ -200,8 +200,7 @@ class Dem:
         # Create a two-dimensional array list like [[地表面,354.15]...]
         if tuple_list.startswith("\n"):
             strip_tuple_list = tuple_list.strip()
-            items = [item.split(",")[1]
-                     for item in strip_tuple_list.split("\n")]
+            items = [item.split(",")[1] for item in strip_tuple_list.split("\n")]
         else:
             items = [item.split(",")[1] for item in tuple_list.split("\n")]
 
@@ -231,7 +230,9 @@ class Dem:
             elif len(str_mesh) == 8:
                 third_mesh_codes.append(mesh_code)
             else:
-                raise DemInputXmlException(f"メッシュコードが不正です。mesh_code={mesh_code}")
+                raise DemInputXmlException(
+                    f"メッシュコードが不正です。mesh_code={mesh_code}"
+                )
 
         if all((third_mesh_codes, second_mesh_codes)):
             raise DemInputXmlException("2次メッシュと3次メッシュが混合しています。")
@@ -242,23 +243,25 @@ class Dem:
             self.get_xml_content(xml_path) for xml_path in self.xml_paths
         ]
 
-        self.mesh_code_list = [item["mesh_code"]
-                               for item in self.all_content_list]
+        self.mesh_code_list = [item["mesh_code"] for item in self.all_content_list]
         self._check_mesh_codes()
 
-        self.meta_data_list = [item["meta_data"]
-                               for item in self.all_content_list]
+        self.meta_data_list = [item["meta_data"] for item in self.all_content_list]
 
     def _store_bounds_latlng(self):
         """対象の全Demから緯度経度の最大・最小値を取得"""
-        lower_left_lat = min([meta_data["lower_corner"]["lat"]
-                              for meta_data in self.meta_data_list])
-        lower_left_lon = min([meta_data["lower_corner"]["lon"]
-                              for meta_data in self.meta_data_list])
-        upper_right_lat = max([meta_data["upper_corner"]["lat"]
-                               for meta_data in self.meta_data_list])
-        upper_right_lon = max([meta_data["upper_corner"]["lon"]
-                               for meta_data in self.meta_data_list])
+        lower_left_lat = min(
+            [meta_data["lower_corner"]["lat"] for meta_data in self.meta_data_list]
+        )
+        lower_left_lon = min(
+            [meta_data["lower_corner"]["lon"] for meta_data in self.meta_data_list]
+        )
+        upper_right_lat = max(
+            [meta_data["upper_corner"]["lat"] for meta_data in self.meta_data_list]
+        )
+        upper_right_lon = max(
+            [meta_data["upper_corner"]["lon"] for meta_data in self.meta_data_list]
+        )
 
         bounds_latlng = {
             "lower_left": {"lat": lower_left_lat, "lon": lower_left_lon},
