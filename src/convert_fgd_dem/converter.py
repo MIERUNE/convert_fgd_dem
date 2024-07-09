@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -11,12 +12,13 @@ from .geotiff import Geotiff
 class Converter:
 
     def __init__(
-            self,
-            import_path,
-            output_path,
-            output_epsg="EPSG:4326",
-            file_name='output.tif',
-            rgbify=False):
+        self,
+        import_path,
+        output_path,
+        output_epsg="EPSG:4326",
+        file_name="output.tif",
+        rgbify=False,
+    ):
         """Initializer
 
         Args:
@@ -33,7 +35,9 @@ class Converter:
         self.import_path: Path = Path(import_path)
         self.output_path: Path = Path(output_path)
         if not output_epsg.startswith("EPSG:"):
-            raise Exception("EPSGコードの指定が不正です。EPSG:〇〇の形式で入力してください")
+            raise Exception(
+                "EPSGコードの指定が不正です。EPSG:〇〇の形式で入力してください"
+            )
         self.output_epsg: str = output_epsg
         self.file_name: str = file_name
         self.rgbify: bool = rgbify
@@ -121,10 +125,8 @@ class Converter:
             lower_left_lon = data["lower_corner"]["lon"]
 
             # Calculate the distance from (0, 0)
-            lat_distance = lower_left_lat - \
-                self.dem.bounds_latlng["lower_left"]["lat"]
-            lon_distance = lower_left_lon - \
-                self.dem.bounds_latlng["lower_left"]["lon"]
+            lat_distance = lower_left_lat - self.dem.bounds_latlng["lower_left"]["lat"]
+            lon_distance = lower_left_lon - self.dem.bounds_latlng["lower_left"]["lon"]
 
             # Get coordinates on numpy (Rounded off to eliminate errors)
             x_coordinate = round(lon_distance / x_pixel_size)
@@ -177,22 +179,21 @@ class Converter:
                 gdal.GDT_Byte,
                 file_name=self.file_name,
                 no_data_value=None,
-                rgbify=self.rgbify
+                rgbify=self.rgbify,
             )
             if not self.output_epsg == "EPSG:4326":
                 geotiff.resampling(
-                    file_name=self.file_name,
-                    epsg=self.output_epsg,
-                    no_data_value=None
+                    file_name=self.file_name, epsg=self.output_epsg, no_data_value=None
                 )
         else:
-            geotiff.create(
-                1,
-                gdal.GDT_Float32,
-                file_name=self.file_name
-            )
+            geotiff.create(1, gdal.GDT_Float32, file_name=self.file_name)
             if not self.output_epsg == "EPSG:4326":
                 geotiff.resampling(
                     file_name=self.file_name,
                     epsg=self.output_epsg,
                 )
+
+        # Remove extracted directory from ZIP file
+        if self.import_path.suffix == ".zip":
+            extract_dir = self.import_path.parent / self.import_path.stem
+            shutil.rmtree(extract_dir)
