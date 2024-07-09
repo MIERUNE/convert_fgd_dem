@@ -97,7 +97,7 @@ class Dem:
         elif self.import_path.suffix == ".zip":
             extract_dir = self.import_path.parent / self.import_path.stem
             self._unzip_dem(extract_dir)
-            xml_paths = [xml_path for xml_path in extract_dir.glob("*.xml")]
+            xml_paths = [xml_path for xml_path in extract_dir.rglob("*.xml")]
             if not xml_paths:
                 raise DemInputXmlException("指定のパスにxmlファイルが存在しません")
 
