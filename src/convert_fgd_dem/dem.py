@@ -12,11 +12,12 @@ from .helpers import DemInputXmlException
 class Dem:
     """Retrieve metadata from DEM xml"""
 
-    def __init__(self, import_path):
+    def __init__(self, import_path, sea_at_zero=False):
         """Initializer
 
         Args:
             import_path (Path): Path object of import path
+            sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
 
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
@@ -28,6 +29,7 @@ class Dem:
         self.all_content_list: list = []
         self.mesh_code_list: list = []
         self.meta_data_list: list = []
+        self.sea_at_zero = sea_at_zero
         self._get_xml_content_list()
 
         self.np_array_list: list = []
@@ -197,10 +199,24 @@ class Dem:
             name_space,
         ).text
 
-        # Create a two-dimensional array list like [[地表面,354.15]...]
+        # Create an array list like [352.25,354.15...]
         if tuple_list.startswith("\n"):
-            strip_tuple_list = tuple_list.strip()
-            items = [item.split(",")[1] for item in strip_tuple_list.split("\n")]
+            tuple_list = tuple_list.strip()
+
+        if self.sea_at_zero:
+            # replace -9999 by zero if sea_at_zero option is handled
+            items = [
+                (
+                    "0.0"
+                    if (
+                        item.split(",")[0] in ["海水面", "海水底面"]
+                        and item.split(",")[1] == "-9999."
+                    )
+                    else item.split(",")[1]
+                )
+                for item in tuple_list.split("\n")
+            ]
+
         else:
             items = [item.split(",")[1] for item in tuple_list.split("\n")]
 
