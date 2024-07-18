@@ -12,11 +12,12 @@ from .helpers import DemInputXmlException
 class Dem:
     """Retrieve metadata from DEM xml"""
 
-    def __init__(self, import_path):
+    def __init__(self, import_path, sea_at_zero=False):
         """Initializer
 
         Args:
             import_path (Path): Path object of import path
+            sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
 
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
@@ -28,6 +29,7 @@ class Dem:
         self.all_content_list: list = []
         self.mesh_code_list: list = []
         self.meta_data_list: list = []
+        self.sea_at_zero = sea_at_zero
         self._get_xml_content_list()
 
         self.np_array_list: list = []
@@ -146,7 +148,7 @@ class Dem:
 
         return meta_data
 
-    def get_xml_content(self, xml_path, sea_at_zero=False):
+    def get_xml_content(self, xml_path):
         """Read xml to get mesh code, metadata and elevation value
 
         Args:
@@ -201,7 +203,7 @@ class Dem:
         if tuple_list.startswith("\n"):
             tuple_list = tuple_list.strip()
 
-        if sea_at_zero:
+        if self.sea_at_zero:
             # replace -9999 by zero if sea_at_zero option is handled
             items = [
                 (

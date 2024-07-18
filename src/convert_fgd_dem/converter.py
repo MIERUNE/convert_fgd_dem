@@ -18,6 +18,7 @@ class Converter:
         output_epsg="EPSG:4326",
         file_name="output.tif",
         rgbify=False,
+        sea_at_zero=False,
     ):
         """Initializer
 
@@ -27,6 +28,7 @@ class Converter:
             output_epsg (str): string of output epsg
             file_name (str): string of output filename
             rgbify (bool): whether to generate TerrainRGB or not
+            sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
 
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
@@ -42,7 +44,7 @@ class Converter:
         self.file_name: str = file_name
         self.rgbify: bool = rgbify
 
-        self.dem = Dem(self.import_path)
+        self.dem = Dem(self.import_path, sea_at_zero)
 
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
