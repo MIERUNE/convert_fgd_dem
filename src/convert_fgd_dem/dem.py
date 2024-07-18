@@ -197,12 +197,10 @@ class Dem:
             name_space,
         ).text
 
-        # Create a two-dimensional array list like [[地表面,354.15]...]
+        # Create an array list like [352.25,354.15...]
         if tuple_list.startswith("\n"):
-            strip_tuple_list = tuple_list.strip()
-            items = [item.split(",")[1] for item in strip_tuple_list.split("\n")]
-        else:
-            items = [item.split(",")[1] for item in tuple_list.split("\n")]
+            tuple_list = tuple_list.strip()
+        items = [item.split(",")[1] for item in tuple_list.split("\n")]
 
         elevation = {"mesh_code": mesh_code, "items": items}
 
