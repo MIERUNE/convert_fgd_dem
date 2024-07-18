@@ -146,7 +146,7 @@ class Dem:
 
         return meta_data
 
-    def get_xml_content(self, xml_path):
+    def get_xml_content(self, xml_path, sea_at_zero=False):
         """Read xml to get mesh code, metadata and elevation value
 
         Args:
@@ -200,19 +200,23 @@ class Dem:
         # Create an array list like [352.25,354.15...]
         if tuple_list.startswith("\n"):
             tuple_list = tuple_list.strip()
-        # items = [item.split(",")[1] for item in tuple_list.split("\n")]
 
-        items = [
-            (
-                "0.0"
-                if (
-                    item.split(",")[0] in ["海水面", "海水底面"]
-                    and item.split(",")[1] == "-9999."
+        if sea_at_zero:
+            # replace -9999 by zero if sea_at_zero option is handled
+            items = [
+                (
+                    "0.0"
+                    if (
+                        item.split(",")[0] in ["海水面", "海水底面"]
+                        and item.split(",")[1] == "-9999."
+                    )
+                    else item.split(",")[1]
                 )
-                else item.split(",")[1]
-            )
-            for item in tuple_list.split("\n")
-        ]
+                for item in tuple_list.split("\n")
+            ]
+
+        else:
+            items = [item.split(",")[1] for item in tuple_list.split("\n")]
 
         elevation = {"mesh_code": mesh_code, "items": items}
 
