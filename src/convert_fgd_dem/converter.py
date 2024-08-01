@@ -187,12 +187,14 @@ class Converter(QThread):
         """
         self.dem = Dem(self.import_path, self.sea_at_zero)
         self.setMaximum.emit(len(self.dem.xml_paths))
-        print(self.dem.xml_paths)
 
         # Retrieve DEM contents from input XML files
+        self.postMessage.emit("Converting XML files to DEM...")
         for xml_path in self.dem.xml_paths:
             self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
             self.addProgress.emit(1)
+
+        self.postMessage.emit("Finalizing...")
 
         # convert Dem contents to array
         self.dem.contents_to_array()
@@ -226,3 +228,5 @@ class Converter(QThread):
         if self.import_path.suffix == ".zip":
             extract_dir = self.import_path.parent / self.import_path.stem
             shutil.rmtree(extract_dir)
+
+        self.processFinished.emit()

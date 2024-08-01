@@ -83,7 +83,7 @@ class Dem:
         # Multi xml file (input: "path/to/fil21.xml" "path/to/file2.xml"...)
         if self.import_path.suffix == '.xml"':
             xml_paths = str(self.import_path).split('" "')
-            print(xml_paths)
+
             xml_paths = [
                 Path(xml_path.strip('"'))
                 for xml_path in xml_paths
