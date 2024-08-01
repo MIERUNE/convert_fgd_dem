@@ -8,8 +8,18 @@ from osgeo import gdal
 from .dem import Dem
 from .geotiff import Geotiff
 
+from PyQt5.QtCore import QThread, pyqtSignal
 
-class Converter:
+
+class Converter(QThread):
+    # thread signals to progress dialog
+    # use : set maximum value in progress bar: self.setMaximum.emit(110)
+    setMaximum = pyqtSignal(int)
+    addProgress = pyqtSignal(int)
+    postMessage = pyqtSignal(str)
+    processFinished = pyqtSignal()
+    setAbortable = pyqtSignal(bool)
+    processFailed = pyqtSignal(str)
 
     def __init__(
         self,
@@ -34,6 +44,7 @@ class Converter:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
             "Content" refers to mesh code, metadata, and elevation values.
         """
+        super().__init__()
         self.import_path: Path = Path(import_path)
         self.output_path: Path = Path(output_path)
         if not output_epsg.startswith("EPSG:"):
@@ -46,7 +57,7 @@ class Converter:
 
         # self.dem = Dem(self.import_path, sea_at_zero)
         self.sea_at_zero = sea_at_zero
-        self.dem = None  # to be populate with Dem class in dem_to_geotiff
+        self.dem = None  # to be populate with Dem class in "run" main function
 
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
@@ -168,12 +179,14 @@ class Converter:
         )
         return data_for_geotiff
 
-    def dem_to_geotiff(self):
+    def run(self):
         """
+        dem to geotiff main function
         Convert the xml(dem) in the selected directory to GeoTiff and store it in the specified directory
         If value of rgbify is True, also generate terrainRGB
         """
         self.dem = Dem(self.import_path, self.sea_at_zero)
+        self.setMaximum.emit(len(self.dem.xml_paths))
 
         data_for_geotiff = self.make_data_for_geotiff()
 
