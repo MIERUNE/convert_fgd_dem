@@ -44,7 +44,9 @@ class Converter:
         self.file_name: str = file_name
         self.rgbify: bool = rgbify
 
-        self.dem = Dem(self.import_path, sea_at_zero)
+        # self.dem = Dem(self.import_path, sea_at_zero)
+        self.sea_at_zero = sea_at_zero
+        self.dem = None  # to be populate with Dem class in dem_to_geotiff
 
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
@@ -171,6 +173,8 @@ class Converter:
         Convert the xml(dem) in the selected directory to GeoTiff and store it in the specified directory
         If value of rgbify is True, also generate terrainRGB
         """
+        self.dem = Dem(self.import_path, self.sea_at_zero)
+
         data_for_geotiff = self.make_data_for_geotiff()
 
         geotiff = Geotiff(*data_for_geotiff)
