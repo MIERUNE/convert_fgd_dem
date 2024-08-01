@@ -189,12 +189,17 @@ class Converter(QThread):
         self.setMaximum.emit(len(self.dem.xml_paths))
 
         # Retrieve DEM contents from input XML files
-        self.postMessage.emit("Converting XML files to DEM...")
+        if self.rgbify:
+            progress_message = "Converting XML files to Terrain RGB..."
+        else:
+            progress_message = "Converting XML files to GeoTIFF DEM..."
+        self.postMessage.emit(progress_message)
+
         for xml_path in self.dem.xml_paths:
             self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
             self.addProgress.emit(1)
 
-        self.postMessage.emit("Finalizing...")
+        self.postMessage.emit("Creating TIFF file...")
 
         # convert Dem contents to array
         self.dem.contents_to_array()
