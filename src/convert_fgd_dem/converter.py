@@ -59,6 +59,8 @@ class Converter(QThread):
         self.sea_at_zero = sea_at_zero
         self.dem = None  # to be populate with Dem class in "run" main function
 
+        self.process_interrupted = False
+
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
         Returns:
@@ -198,6 +200,9 @@ class Converter(QThread):
         for xml_path in self.dem.xml_paths:
             self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
             self.addProgress.emit(1)
+
+        if self.process_interrupted:
+            return
 
         self.postMessage.emit("Creating TIFF file...")
 
