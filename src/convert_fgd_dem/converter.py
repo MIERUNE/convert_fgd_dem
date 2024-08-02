@@ -12,7 +12,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class Converter(QThread):
-    # thread signals to progress dialog
+    # thread signals to plugin progress dialog
     # use : set maximum value in progress bar: self.setMaximum.emit(110)
     setMaximum = pyqtSignal(int)
     addProgress = pyqtSignal(int)
@@ -55,7 +55,6 @@ class Converter(QThread):
         self.file_name: str = file_name
         self.rgbify: bool = rgbify
 
-        # self.dem = Dem(self.import_path, sea_at_zero)
         self.sea_at_zero = sea_at_zero
         self.dem = None  # to be populate with Dem class in "run" main function
 
@@ -190,7 +189,7 @@ class Converter(QThread):
         self.dem = Dem(self.import_path, self.sea_at_zero)
         self.setMaximum.emit(len(self.dem.xml_paths))
 
-        # Retrieve DEM contents from input XML files
+        # Get DEM contents from input XML files
         if self.rgbify:
             progress_message = "Converting XML files to Terrain RGB..."
         else:
@@ -201,6 +200,7 @@ class Converter(QThread):
             self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
             self.addProgress.emit(1)
 
+        # Don't produce geotiff if process aborted by user
         if self.process_interrupted:
             return
 
