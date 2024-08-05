@@ -30,8 +30,9 @@ class Dem:
         self.mesh_code_list: list = []
         self.meta_data_list: list = []
         self.sea_at_zero = sea_at_zero
-        self._get_xml_content_list()
 
+    def contents_to_array(self):
+        self._get_metadata_list()
         self.np_array_list: list = []
         self._store_np_array_list()
 
@@ -82,10 +83,11 @@ class Dem:
         # Multi xml file (input: "path/to/fil21.xml" "path/to/file2.xml"...)
         if self.import_path.suffix == '.xml"':
             xml_paths = str(self.import_path).split('" "')
+
             xml_paths = [
                 Path(xml_path.strip('"'))
                 for xml_path in xml_paths
-                if xml_path.endswith(".xml")
+                if (xml_path.endswith(".xml") or xml_path.endswith('.xml"'))
             ]
 
         elif self.import_path.is_dir():
@@ -253,11 +255,10 @@ class Dem:
         if all((third_mesh_codes, second_mesh_codes)):
             raise DemInputXmlException("2次メッシュと3次メッシュが混合しています。")
 
-    def _get_xml_content_list(self):
-        """Create a list of metadata and elevation values"""
-        self.all_content_list = [
-            self.get_xml_content(xml_path) for xml_path in self.xml_paths
-        ]
+    def _get_metadata_list(self):
+        """Create a list of metadata
+        self.all_content_list is populated with elevation data in parent Contents thread
+        """
 
         self.mesh_code_list = [item["mesh_code"] for item in self.all_content_list]
         self._check_mesh_codes()

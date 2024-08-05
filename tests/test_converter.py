@@ -8,11 +8,11 @@ from src.convert_fgd_dem import Converter
 
 class TestConverter(unittest.TestCase):
     def test_converter(self):
-        converter = Converter(
+        thread = Converter(
             import_path=Path("./target_files/FG-GML-6441-32-DEM5A.zip"),
             output_path=Path("./test_generated_files"),
         )
-        converter.dem_to_geotiff()
+        thread.start()
         geotiff_path = Path("./test_generated_files/dem_epsg4326.tif")
         src = gdal.Open(str(geotiff_path.resolve()), gdalconst.GA_ReadOnly)
         x_length = src.RasterXSize
