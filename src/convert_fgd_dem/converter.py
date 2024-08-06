@@ -118,7 +118,11 @@ class Converter(QThread):
 
         if x_length >= 32000 or y_length >= 32000:
             # set to a 4GB maximum tiff size
-            raise Exception(f"セルサイズが大きすぎます。x={x_length}・y={y_length}")
+
+            # emit error for plugin
+            error_message = f"Image size is too large: x={x_length}・y={y_length}"
+            self.processFailed.emit(error_message)
+            raise Exception(error_message)
 
         # Create an array that covers all xml
         dem_array = np.empty((y_length, x_length), np.float32)
@@ -187,6 +191,7 @@ class Converter(QThread):
         If value of rgbify is True, also generate terrainRGB
         """
         self.dem = Dem(self.import_path, self.sea_at_zero)
+
         self.setMaximum.emit(len(self.dem.xml_paths))
 
         # Get DEM contents from input XML files
