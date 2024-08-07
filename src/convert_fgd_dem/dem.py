@@ -109,7 +109,7 @@ class Dem:
 
         else:
             raise DemInputXmlException(
-                "指定できる形式は「xml」「.xmlが格納されたディレクトリ」「.xmlが格納された.zip」のみです"
+                "Only ZIP file, XML file, or folder conatining XML files are allowed."
             )
         return xml_paths
 
@@ -174,7 +174,7 @@ class Dem:
             root = tree.getroot()
             mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
         except et.ParseError:
-            raise DemInputXmlException("不正なxmlです")
+            raise DemInputXmlException("Incorrect XML file.")
 
         raw_metadata = {
             "mesh_code": mesh_code,
@@ -255,7 +255,7 @@ class Dem:
                 )
 
         if all((third_mesh_codes, second_mesh_codes)):
-            raise DemInputXmlException("2次メッシュと3次メッシュが混合しています。")
+            raise DemInputXmlException("Mixed mesh format (2nd mesh and 3rd mesh)")
 
     def _get_metadata_list(self):
         """Create a list of metadata
