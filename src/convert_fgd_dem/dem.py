@@ -92,8 +92,10 @@ class Dem:
 
         elif self.import_path.is_dir():
             xml_paths = [xml_path for xml_path in self.import_path.glob("*.xml")]
-            if xml_paths is None:
-                raise DemInputXmlException("指定ディレクトリに.xmlが存在しません")
+            print(xml_paths)
+            if xml_paths is None or len(xml_paths) == 0:
+                print(len(xml_paths))
+                raise DemInputXmlException("No XML file found in input folder.")
 
         elif self.import_path.suffix == ".xml":
             xml_paths = [self.import_path]
@@ -103,7 +105,7 @@ class Dem:
             self._unzip_dem(extract_dir)
             xml_paths = [xml_path for xml_path in extract_dir.rglob("*.xml")]
             if not xml_paths:
-                raise DemInputXmlException("指定のパスにxmlファイルが存在しません")
+                raise DemInputXmlException("No XML file found in input zip file.")
 
         else:
             raise DemInputXmlException(
