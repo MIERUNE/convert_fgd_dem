@@ -92,9 +92,7 @@ class Dem:
 
         elif self.import_path.is_dir():
             xml_paths = [xml_path for xml_path in self.import_path.glob("*.xml")]
-            print(xml_paths)
             if xml_paths is None or len(xml_paths) == 0:
-                print(len(xml_paths))
                 raise DemInputXmlException("No XML file found in input folder.")
 
         elif self.import_path.suffix == ".xml":
