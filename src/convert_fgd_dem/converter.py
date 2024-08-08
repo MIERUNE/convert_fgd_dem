@@ -121,7 +121,6 @@ class Converter(QThread):
 
             # emit error for plugin
             error_message = f"Image size is too large: x={x_length}・y={y_length}"
-            self.processFailed.emit(error_message)
             raise Exception(error_message)
 
         # Create an array that covers all xml
