@@ -244,7 +244,7 @@ class Converter(QThread):
         except Exception as e:
             # emit error for plugin
             self.processFailed.emit(str(e))
-            raise Exception(e)
+            raise Exception(e) from e
 
         # Remove extracted directory from ZIP file
         if self.import_path.suffix == ".zip":
