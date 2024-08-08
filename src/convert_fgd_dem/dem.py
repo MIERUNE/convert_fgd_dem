@@ -162,7 +162,7 @@ class Dem:
             dict: A dictionary containing mesh code, metadata, and elevation values
         """
         if not xml_path.suffix == ".xml":
-            raise DemInputXmlException("指定できる形式は.xmlのみです")
+            raise DemInputXmlException("Only XML file format is allowed.")
 
         name_space = {
             "dataset": "http://fgd.gsi.go.jp/spec/2008/FGD_GMLSchema",
@@ -251,7 +251,7 @@ class Dem:
                 third_mesh_codes.append(mesh_code)
             else:
                 raise DemInputXmlException(
-                    f"メッシュコードが不正です。mesh_code={mesh_code}"
+                    f"Incorrect Mesh code: mesh_code={mesh_code}"
                 )
 
         if all((third_mesh_codes, second_mesh_codes)):

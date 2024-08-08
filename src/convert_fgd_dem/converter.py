@@ -149,7 +149,7 @@ class Converter(QThread):
             lat_distance = lower_left_lat - self.dem.bounds_latlng["lower_left"]["lat"]
             lon_distance = lower_left_lon - self.dem.bounds_latlng["lower_left"]["lon"]
 
-            # Get coordinates on numpy (Rounded off to eliminate errors)
+            # Get coordinates on numpy (Rounded off to eliminate errors)
             x_coordinate = round(lon_distance / x_pixel_size)
             y_coordinate = round(lat_distance / (-y_pixel_size))
 
