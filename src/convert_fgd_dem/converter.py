@@ -118,7 +118,10 @@ class Converter(QThread):
 
         if x_length >= 32000 or y_length >= 32000:
             # set to a 4GB maximum tiff size
-            raise Exception(f"セルサイズが大きすぎます。x={x_length}・y={y_length}")
+
+            # emit error for plugin
+            error_message = f"Image size is too large: x={x_length}・y={y_length}"
+            raise Exception(error_message)
 
         # Create an array that covers all xml
         dem_array = np.empty((y_length, x_length), np.float32)
@@ -145,7 +148,7 @@ class Converter(QThread):
             lat_distance = lower_left_lat - self.dem.bounds_latlng["lower_left"]["lat"]
             lon_distance = lower_left_lon - self.dem.bounds_latlng["lower_left"]["lon"]
 
-            # Get coordinates on numpy (Rounded off to eliminate errors)
+            # Get coordinates on numpy (Rounded off to eliminate errors)
             x_coordinate = round(lon_distance / x_pixel_size)
             y_coordinate = round(lat_distance / (-y_pixel_size))
 
@@ -186,53 +189,62 @@ class Converter(QThread):
         Convert the xml(dem) in the selected directory to GeoTiff and store it in the specified directory
         If value of rgbify is True, also generate terrainRGB
         """
-        self.dem = Dem(self.import_path, self.sea_at_zero)
-        self.setMaximum.emit(len(self.dem.xml_paths))
+        try:
+            self.dem = Dem(self.import_path, self.sea_at_zero)
 
-        # Get DEM contents from input XML files
-        if self.rgbify:
-            progress_message = "Converting XML files to Terrain RGB..."
-        else:
-            progress_message = "Converting XML files to GeoTIFF DEM..."
-        self.postMessage.emit(progress_message)
+            self.setMaximum.emit(len(self.dem.xml_paths))
 
-        for xml_path in self.dem.xml_paths:
-            self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
-            self.addProgress.emit(1)
+            # Get DEM contents from input XML files
+            if self.rgbify:
+                progress_message = "Converting XML files to Terrain RGB..."
+            else:
+                progress_message = "Converting XML files to GeoTIFF DEM..."
+            self.postMessage.emit(progress_message)
 
-        # Don't produce geotiff if process aborted by user
-        if self.process_interrupted:
-            return
+            for xml_path in self.dem.xml_paths:
+                self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
+                self.addProgress.emit(1)
 
-        self.postMessage.emit("Creating TIFF file...")
+            # Don't produce geotiff if process aborted by user
+            if self.process_interrupted:
+                return
 
-        # convert Dem contents to array
-        self.dem.contents_to_array()
+            self.postMessage.emit("Creating TIFF file...")
 
-        data_for_geotiff = self.make_data_for_geotiff()
+            # convert Dem contents to array
+            self.dem.contents_to_array()
 
-        geotiff = Geotiff(*data_for_geotiff)
+            data_for_geotiff = self.make_data_for_geotiff()
 
-        if self.rgbify:
-            os.path.splitext(self.file_name)
-            geotiff.create(
-                3,
-                gdal.GDT_Byte,
-                file_name=self.file_name,
-                no_data_value=None,
-                rgbify=self.rgbify,
-            )
-            if not self.output_epsg == "EPSG:4326":
-                geotiff.resampling(
-                    file_name=self.file_name, epsg=self.output_epsg, no_data_value=None
-                )
-        else:
-            geotiff.create(1, gdal.GDT_Float32, file_name=self.file_name)
-            if not self.output_epsg == "EPSG:4326":
-                geotiff.resampling(
+            geotiff = Geotiff(*data_for_geotiff)
+
+            if self.rgbify:
+                os.path.splitext(self.file_name)
+                geotiff.create(
+                    3,
+                    gdal.GDT_Byte,
                     file_name=self.file_name,
-                    epsg=self.output_epsg,
+                    no_data_value=None,
+                    rgbify=self.rgbify,
                 )
+                if not self.output_epsg == "EPSG:4326":
+                    geotiff.resampling(
+                        file_name=self.file_name,
+                        epsg=self.output_epsg,
+                        no_data_value=None,
+                    )
+            else:
+                geotiff.create(1, gdal.GDT_Float32, file_name=self.file_name)
+                if not self.output_epsg == "EPSG:4326":
+                    geotiff.resampling(
+                        file_name=self.file_name,
+                        epsg=self.output_epsg,
+                    )
+
+        except Exception as e:
+            # emit error for plugin
+            self.processFailed.emit(str(e))
+            raise Exception(e) from e
 
         # Remove extracted directory from ZIP file
         if self.import_path.suffix == ".zip":

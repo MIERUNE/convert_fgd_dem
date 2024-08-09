@@ -10,6 +10,7 @@ isort = "*"
 
 [packages]
 numpy = ">=1.20.1"
+gdal = "==3.9.1"
 
 [requires]
 python_version = "3.9"

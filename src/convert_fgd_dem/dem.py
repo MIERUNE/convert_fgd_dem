@@ -92,8 +92,8 @@ class Dem:
 
         elif self.import_path.is_dir():
             xml_paths = [xml_path for xml_path in self.import_path.glob("*.xml")]
-            if xml_paths is None:
-                raise DemInputXmlException("指定ディレクトリに.xmlが存在しません")
+            if xml_paths is None or len(xml_paths) == 0:
+                raise DemInputXmlException("No XML file found in input folder.")
 
         elif self.import_path.suffix == ".xml":
             xml_paths = [self.import_path]
@@ -103,11 +103,11 @@ class Dem:
             self._unzip_dem(extract_dir)
             xml_paths = [xml_path for xml_path in extract_dir.rglob("*.xml")]
             if not xml_paths:
-                raise DemInputXmlException("指定のパスにxmlファイルが存在しません")
+                raise DemInputXmlException("No XML file found in input zip file.")
 
         else:
             raise DemInputXmlException(
-                "指定できる形式は「xml」「.xmlが格納されたディレクトリ」「.xmlが格納された.zip」のみです"
+                "Only ZIP file, XML file, or folder conatining XML files are allowed."
             )
         return xml_paths
 
@@ -160,7 +160,7 @@ class Dem:
             dict: A dictionary containing mesh code, metadata, and elevation values
         """
         if not xml_path.suffix == ".xml":
-            raise DemInputXmlException("指定できる形式は.xmlのみです")
+            raise DemInputXmlException("Only XML file format is allowed.")
 
         name_space = {
             "dataset": "http://fgd.gsi.go.jp/spec/2008/FGD_GMLSchema",
@@ -170,36 +170,38 @@ class Dem:
         try:
             tree = et.parse(xml_path)
             root = tree.getroot()
+
             mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
-        except et.ParseError:
-            raise DemInputXmlException("不正なxmlです")
 
-        raw_metadata = {
-            "mesh_code": mesh_code,
-            "lower_corner": root.find(
-                "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:lowerCorner",
-                name_space,
-            ).text,
-            "upper_corner": root.find(
-                "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:upperCorner",
-                name_space,
-            ).text,
-            "grid_length": root.find(
-                "dataset:DEM//dataset:coverage//gml:gridDomain//gml:Grid//gml:high",
-                name_space,
-            ).text,
-            "start_point": root.find(
-                "dataset:DEM//dataset:coverage//gml:coverageFunction//gml:GridFunction//gml:startPoint",
-                name_space,
-            ).text,
-        }
+            raw_metadata = {
+                "mesh_code": mesh_code,
+                "lower_corner": root.find(
+                    "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:lowerCorner",
+                    name_space,
+                ).text,
+                "upper_corner": root.find(
+                    "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:upperCorner",
+                    name_space,
+                ).text,
+                "grid_length": root.find(
+                    "dataset:DEM//dataset:coverage//gml:gridDomain//gml:Grid//gml:high",
+                    name_space,
+                ).text,
+                "start_point": root.find(
+                    "dataset:DEM//dataset:coverage//gml:coverageFunction//gml:GridFunction//gml:startPoint",
+                    name_space,
+                ).text,
+            }
 
-        meta_data = self._format_metadata(raw_metadata)
+            meta_data = self._format_metadata(raw_metadata)
 
-        tuple_list = root.find(
-            "dataset:DEM//dataset:coverage//gml:rangeSet//gml:DataBlock//gml:tupleList",
-            name_space,
-        ).text
+            tuple_list = root.find(
+                "dataset:DEM//dataset:coverage//gml:rangeSet//gml:DataBlock//gml:tupleList",
+                name_space,
+            ).text
+
+        except Exception:
+            raise DemInputXmlException("Incorrect XML file.")
 
         # Create an array list like [352.25,354.15...]
         if tuple_list.startswith("\n"):
@@ -249,11 +251,11 @@ class Dem:
                 third_mesh_codes.append(mesh_code)
             else:
                 raise DemInputXmlException(
-                    f"メッシュコードが不正です。mesh_code={mesh_code}"
+                    f"Incorrect Mesh code: mesh_code={mesh_code}"
                 )
 
         if all((third_mesh_codes, second_mesh_codes)):
-            raise DemInputXmlException("2次メッシュと3次メッシュが混合しています。")
+            raise DemInputXmlException("Mixed mesh format (2nd mesh and 3rd mesh)")
 
     def _get_metadata_list(self):
         """Create a list of metadata
