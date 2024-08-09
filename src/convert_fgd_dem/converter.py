@@ -250,5 +250,15 @@ class Converter(QThread):
         if self.import_path.suffix == ".zip":
             extract_dir = self.import_path.parent / self.import_path.stem
             shutil.rmtree(extract_dir)
+        elif self.import_path.suffix == '.zip"':
+            zip_paths = str(self.import_path).split('" "')
+            zip_paths = [
+                Path(zip_path.strip('"'))
+                for zip_path in zip_paths
+                if (zip_path.endswith(".zip") or zip_path.endswith('.zip"'))
+            ]
+            for zip_file in zip_paths:
+                extract_dir = zip_file.parent / zip_file.stem
+                shutil.rmtree(extract_dir)
 
         self.processFinished.emit()

@@ -39,13 +39,13 @@ class Dem:
         self.bounds_latlng: dict = {}
         self._store_bounds_latlng()
 
-    def _unzip_dem(self, dest_dir):
+    def _unzip_dem(self, zip_file, dest_dir):
         """Unzip the zip file containing the DEM
 
         Args:
             dest_dir (Path): Path object of unzip directory
         """
-        with zipfile.ZipFile(self.import_path, "r") as zip_data:
+        with zipfile.ZipFile(zip_file, "r") as zip_data:
             zip_data.extractall(path=dest_dir)
             # Delete unnecessary files created when macOS
             garbage_dir = dest_dir / "__MACOSX"
@@ -69,8 +69,8 @@ class Dem:
                         os.remove(dest_dir / path)
                         continue
             # Deleted the directory with the same name as the parent folder
-            if (dest_dir / self.import_path.stem).exists():
-                (dest_dir / self.import_path.stem).rmdir()
+            if (dest_dir / zip_file.stem).exists():
+                (dest_dir / zip_file.stem).rmdir()
 
     def _get_xml_paths(self):
         """Create a list of xml Path objects from the specified path
@@ -100,15 +100,35 @@ class Dem:
 
         elif self.import_path.suffix == ".zip":
             extract_dir = self.import_path.parent / self.import_path.stem
-            self._unzip_dem(extract_dir)
+            self._unzip_dem(self.import_path, extract_dir)
             xml_paths = [xml_path for xml_path in extract_dir.rglob("*.xml")]
             if not xml_paths:
+                raise DemInputXmlException("No XML file found in input zip file.")
+
+        # Multi xml file (input: "path/to/fil21.zip" "path/to/file2.zip"...)
+        elif self.import_path.suffix == '.zip"':
+            zip_paths = str(self.import_path).split('" "')
+            zip_paths = [
+                Path(zip_path.strip('"'))
+                for zip_path in zip_paths
+                if (zip_path.endswith(".zip") or zip_path.endswith('.zip"'))
+            ]
+
+            xml_paths = []
+            for zip_path in zip_paths:
+                extract_dir = zip_path.parent / zip_path.stem
+                self._unzip_dem(zip_path, extract_dir)
+                for xml_path in extract_dir.rglob("*.xml"):
+                    xml_paths.append(xml_path)
+
+            if len(xml_paths) == 0:
                 raise DemInputXmlException("No XML file found in input zip file.")
 
         else:
             raise DemInputXmlException(
                 "Only ZIP file, XML file, or folder conatining XML files are allowed."
             )
+
         return xml_paths
 
     @staticmethod
