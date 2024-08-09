@@ -190,36 +190,38 @@ class Dem:
         try:
             tree = et.parse(xml_path)
             root = tree.getroot()
+
             mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
-        except et.ParseError:
+
+            raw_metadata = {
+                "mesh_code": mesh_code,
+                "lower_corner": root.find(
+                    "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:lowerCorner",
+                    name_space,
+                ).text,
+                "upper_corner": root.find(
+                    "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:upperCorner",
+                    name_space,
+                ).text,
+                "grid_length": root.find(
+                    "dataset:DEM//dataset:coverage//gml:gridDomain//gml:Grid//gml:high",
+                    name_space,
+                ).text,
+                "start_point": root.find(
+                    "dataset:DEM//dataset:coverage//gml:coverageFunction//gml:GridFunction//gml:startPoint",
+                    name_space,
+                ).text,
+            }
+
+            meta_data = self._format_metadata(raw_metadata)
+
+            tuple_list = root.find(
+                "dataset:DEM//dataset:coverage//gml:rangeSet//gml:DataBlock//gml:tupleList",
+                name_space,
+            ).text
+
+        except Exception:
             raise DemInputXmlException("Incorrect XML file.")
-
-        raw_metadata = {
-            "mesh_code": mesh_code,
-            "lower_corner": root.find(
-                "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:lowerCorner",
-                name_space,
-            ).text,
-            "upper_corner": root.find(
-                "dataset:DEM//dataset:coverage//gml:boundedBy//gml:Envelope//gml:upperCorner",
-                name_space,
-            ).text,
-            "grid_length": root.find(
-                "dataset:DEM//dataset:coverage//gml:gridDomain//gml:Grid//gml:high",
-                name_space,
-            ).text,
-            "start_point": root.find(
-                "dataset:DEM//dataset:coverage//gml:coverageFunction//gml:GridFunction//gml:startPoint",
-                name_space,
-            ).text,
-        }
-
-        meta_data = self._format_metadata(raw_metadata)
-
-        tuple_list = root.find(
-            "dataset:DEM//dataset:coverage//gml:rangeSet//gml:DataBlock//gml:tupleList",
-            name_space,
-        ).text
 
         # Create an array list like [352.25,354.15...]
         if tuple_list.startswith("\n"):
