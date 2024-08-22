@@ -205,6 +205,18 @@ class Converter(QThread):
                 self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
                 self.addProgress.emit(1)
 
+            # Stop process if output is a whole no data dem
+            is_nodata_dem = True
+            for content in self.dem.all_content_list:
+                items = content["elevation"]["items"]
+                if any(item != "-9999." for item in items):
+                    is_nodata_dem = False
+                    break
+
+            if is_nodata_dem:
+                self.processFailed.emit("Output DEM has no elevation data.")
+                self.process_interrupted = True
+
             # Don't produce geotiff if process aborted by user
             if self.process_interrupted:
                 return
