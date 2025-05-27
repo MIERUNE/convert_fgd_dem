@@ -8,7 +8,7 @@ from osgeo import gdal
 from .dem import Dem
 from .geotiff import Geotiff
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from qgis.PyQt.QtCore import QThread, pyqtSignal
 
 
 class Converter(QThread):
