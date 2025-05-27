@@ -3,7 +3,7 @@
 ## Overview
 
 You can get the DEM data in xml format for any location from the following site.
-[https://fgd.gsi.go.jp/download](https://fgd.gsi.go.jp/download)
+[https://service.gsi.go.jp/kiban/app/map/?search=dem](https://service.gsi.go.jp/kiban/app/map/?search=dem)
 
 Run the tool with downloaded "xml" or "directory containing .xml" or ".zip containing .xml" to generate GeoTiff and Terrain RGB (Tiff).
 
@@ -26,7 +26,7 @@ Run the tool with downloaded "xml" or "directory containing .xml" or ".zip conta
 ### download DEM
 
 - Download from following link.
-  - https://fgd.gsi.go.jp/download/
+  - https://service.gsi.go.jp/kiban/app/map/?search=dem
 
 ### write python script
 
