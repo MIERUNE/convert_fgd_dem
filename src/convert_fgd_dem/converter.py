@@ -244,6 +244,7 @@ class Converter(QThread):
                         file_name=self.file_name,
                         epsg=self.output_epsg,
                         no_data_value=None,
+                        resampleAlg="nearest",
                     )
             else:
                 geotiff.create(1, gdal.GDT_Float32, file_name=self.file_name)
@@ -251,6 +252,7 @@ class Converter(QThread):
                     geotiff.resampling(
                         file_name=self.file_name,
                         epsg=self.output_epsg,
+                        resampleAlg="bilinear",
                     )
 
         except Exception as e:

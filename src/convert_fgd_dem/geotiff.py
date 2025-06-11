@@ -125,11 +125,13 @@ class Geotiff:
         dst_ds.FlushCache()
 
     def resampling(
-            self,
-            file_name,
-            source_path=None,
-            epsg="EPSG:3857",
-            no_data_value=-9999):
+        self,
+        file_name,
+        source_path=None,
+        epsg="EPSG:3857",
+        no_data_value=-9999,
+        resampleAlg="bilinear",
+    ):
         """Create new GeoTiff from EPSG: 4326 Tiff
 
         Args:
@@ -145,5 +147,6 @@ class Geotiff:
             file_name=file_name,
             epsg=epsg,
             output_path=self.output_path,
-            no_data_value=no_data_value
+            no_data_value=no_data_value,
+            resampleAlg=resampleAlg,
         )

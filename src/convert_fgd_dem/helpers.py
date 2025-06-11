@@ -20,7 +20,8 @@ def warp(
     source_path=None,
     output_path=None,
     epsg="EPSG:3857",
-    no_data_value=-9999
+    no_data_value=-9999,
+    resampleAlg="bilinear",
 ):
     """
     Create new GeoTiff from EPSG: 4326 Tiff
@@ -52,7 +53,7 @@ def warp(
         srcSRS="EPSG:4326",
         dstSRS=epsg,
         dstNodata=no_data_value,
-        resampleAlg="bilinear"
+        resampleAlg=resampleAlg,
     )
     resampled_ras.FlushCache()
 
