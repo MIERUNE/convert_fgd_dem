@@ -29,6 +29,7 @@ class Converter(QThread):
         file_name="output.tif",
         rgbify=False,
         sea_at_zero=False,
+        feedback=None,
     ):
         """Initializer
 
@@ -39,6 +40,7 @@ class Converter(QThread):
             file_name (str): string of output filename
             rgbify (bool): whether to generate TerrainRGB or not
             sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
+            feedback (QgsFeedback): QgsFeedback object for progress dialog
 
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
@@ -59,6 +61,7 @@ class Converter(QThread):
         self.dem = None  # to be populate with Dem class in "run" main function
 
         self.process_interrupted = False
+        self.feedback = feedback
 
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
@@ -199,11 +202,12 @@ class Converter(QThread):
                 progress_message = "Converting XML files to Terrain RGB..."
             else:
                 progress_message = "Converting XML files to GeoTIFF DEM..."
-            self.postMessage.emit(progress_message)
+            self.feedback.pushInfo(progress_message)
 
             for xml_path in self.dem.xml_paths:
                 self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
-                self.addProgress.emit(1)
+                download_progress = int(len(self.dem.all_content_list)/len(self.dem.xml_paths)*90 )
+                self.feedback.setProgress(download_progress)
 
             # Stop process if output is a whole no data dem
             is_nodata_dem = True
@@ -221,7 +225,7 @@ class Converter(QThread):
             if self.process_interrupted:
                 return
 
-            self.postMessage.emit("Creating TIFF file...")
+            self.feedback.pushInfo("Creating TIFF file...")
 
             # convert Dem contents to array
             self.dem.contents_to_array()
