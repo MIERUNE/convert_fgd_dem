@@ -195,7 +195,7 @@ class Converter(QThread):
         try:
             self.dem = Dem(self.import_path, self.sea_at_zero)
 
-            self.setMaximum.emit(len(self.dem.xml_paths))
+            # self.setMaximum.emit(len(self.dem.xml_paths))
 
             # Get DEM contents from input XML files
             if self.rgbify:
@@ -204,6 +204,7 @@ class Converter(QThread):
                 progress_message = "Converting XML files to GeoTIFF DEM..."
             self.feedback.pushInfo(progress_message)
 
+            self.feedback.setProgress(0)
             for xml_path in self.dem.xml_paths:
                 self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
                 download_progress = int(
@@ -220,7 +221,7 @@ class Converter(QThread):
                     break
 
             if is_nodata_dem:
-                self.processFailed.emit("Output DEM has no elevation data.")
+                self.feedback.reportError("Output DEM has no elevation data.")
                 self.process_interrupted = True
 
             # Don't produce geotiff if process aborted by user
@@ -263,7 +264,7 @@ class Converter(QThread):
 
         except Exception as e:
             # emit error for plugin
-            self.processFailed.emit(str(e))
+            self.feedback.reportError(f"An error occurred during conversion: {str(e)}")
             raise Exception(e) from e
 
         # Remove extracted directory from ZIP file
@@ -281,4 +282,3 @@ class Converter(QThread):
                 extract_dir = zip_file.parent / zip_file.stem
                 shutil.rmtree(extract_dir)
 
-        self.processFinished.emit()
