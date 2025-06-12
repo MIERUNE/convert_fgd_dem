@@ -8,19 +8,8 @@ from osgeo import gdal
 from .dem import Dem
 from .geotiff import Geotiff
 
-from qgis.PyQt.QtCore import QThread, pyqtSignal
 
-
-class Converter(QThread):
-    # thread signals to plugin progress dialog
-    # use : set maximum value in progress bar: self.setMaximum.emit(110)
-    setMaximum = pyqtSignal(int)
-    addProgress = pyqtSignal(int)
-    postMessage = pyqtSignal(str)
-    processFinished = pyqtSignal()
-    setAbortable = pyqtSignal(bool)
-    processFailed = pyqtSignal(str)
-
+class Converter:
     def __init__(
         self,
         import_path,
@@ -29,6 +18,7 @@ class Converter(QThread):
         file_name="output.tif",
         rgbify=False,
         sea_at_zero=False,
+        feedback=None,
     ):
         """Initializer
 
@@ -39,6 +29,7 @@ class Converter(QThread):
             file_name (str): string of output filename
             rgbify (bool): whether to generate TerrainRGB or not
             sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
+            feedback (QgsFeedback): QgsFeedback object for progress dialog
 
         Notes:
             "Meta_data" refers to mesh code, lonlat of the bottom left and top right, grid size, initial position, and pixel size of DEM.
@@ -59,6 +50,7 @@ class Converter(QThread):
         self.dem = None  # to be populate with Dem class in "run" main function
 
         self.process_interrupted = False
+        self.feedback = feedback
 
     def _calc_image_size(self):
         """Calculate the size of the output image from the lonlat of the Dem boundary and the pixel size.
@@ -192,18 +184,20 @@ class Converter(QThread):
         try:
             self.dem = Dem(self.import_path, self.sea_at_zero)
 
-            self.setMaximum.emit(len(self.dem.xml_paths))
-
             # Get DEM contents from input XML files
             if self.rgbify:
                 progress_message = "Converting XML files to Terrain RGB..."
             else:
                 progress_message = "Converting XML files to GeoTIFF DEM..."
-            self.postMessage.emit(progress_message)
+            self.feedback.pushInfo(progress_message)
 
+            self.feedback.setProgress(0)
             for xml_path in self.dem.xml_paths:
                 self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
-                self.addProgress.emit(1)
+                download_progress = int(
+                    len(self.dem.all_content_list) / len(self.dem.xml_paths) * 90
+                )
+                self.feedback.setProgress(download_progress)
 
             # Stop process if output is a whole no data dem
             is_nodata_dem = True
@@ -214,14 +208,14 @@ class Converter(QThread):
                     break
 
             if is_nodata_dem:
-                self.processFailed.emit("Output DEM has no elevation data.")
-                self.process_interrupted = True
+                self.feedback.reportError("Output DEM has no elevation data.")
+                self.feedback.cancel()
 
             # Don't produce geotiff if process aborted by user
-            if self.process_interrupted:
+            if self.feedback.isCanceled():
                 return
 
-            self.postMessage.emit("Creating TIFF file...")
+            self.feedback.pushInfo("Creating TIFF file...")
 
             # convert Dem contents to array
             self.dem.contents_to_array()
@@ -257,7 +251,7 @@ class Converter(QThread):
 
         except Exception as e:
             # emit error for plugin
-            self.processFailed.emit(str(e))
+            self.feedback.reportError(f"An error occurred during conversion: {str(e)}")
             raise Exception(e) from e
 
         # Remove extracted directory from ZIP file
@@ -275,4 +269,4 @@ class Converter(QThread):
                 extract_dir = zip_file.parent / zip_file.stem
                 shutil.rmtree(extract_dir)
 
-        self.processFinished.emit()
+        self.feedback.setProgress(100)
