@@ -8,19 +8,8 @@ from osgeo import gdal
 from .dem import Dem
 from .geotiff import Geotiff
 
-from qgis.PyQt.QtCore import QThread, pyqtSignal
 
-
-class Converter(QThread):
-    # thread signals to plugin progress dialog
-    # use : set maximum value in progress bar: self.setMaximum.emit(110)
-    setMaximum = pyqtSignal(int)
-    addProgress = pyqtSignal(int)
-    postMessage = pyqtSignal(str)
-    processFinished = pyqtSignal()
-    setAbortable = pyqtSignal(bool)
-    processFailed = pyqtSignal(str)
-
+class Converter:
     def __init__(
         self,
         import_path,
@@ -281,4 +270,3 @@ class Converter(QThread):
             for zip_file in zip_paths:
                 extract_dir = zip_file.parent / zip_file.stem
                 shutil.rmtree(extract_dir)
-
