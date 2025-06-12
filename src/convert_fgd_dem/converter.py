@@ -184,8 +184,6 @@ class Converter:
         try:
             self.dem = Dem(self.import_path, self.sea_at_zero)
 
-            # self.setMaximum.emit(len(self.dem.xml_paths))
-
             # Get DEM contents from input XML files
             if self.rgbify:
                 progress_message = "Converting XML files to Terrain RGB..."
@@ -270,4 +268,5 @@ class Converter:
             for zip_file in zip_paths:
                 extract_dir = zip_file.parent / zip_file.stem
                 shutil.rmtree(extract_dir)
+
         self.feedback.setProgress(100)
