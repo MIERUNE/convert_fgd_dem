@@ -211,10 +211,10 @@ class Converter:
 
             if is_nodata_dem:
                 self.feedback.reportError("Output DEM has no elevation data.")
-                self.process_interrupted = True
+                self.feedback.cancel()
 
             # Don't produce geotiff if process aborted by user
-            if self.process_interrupted:
+            if self.feedback.isCanceled():
                 return
 
             self.feedback.pushInfo("Creating TIFF file...")
@@ -270,3 +270,4 @@ class Converter:
             for zip_file in zip_paths:
                 extract_dir = zip_file.parent / zip_file.stem
                 shutil.rmtree(extract_dir)
+        self.feedback.setProgress(100)
