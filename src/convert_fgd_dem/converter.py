@@ -206,7 +206,9 @@ class Converter(QThread):
 
             for xml_path in self.dem.xml_paths:
                 self.dem.all_content_list.append(self.dem.get_xml_content(xml_path))
-                download_progress = int(len(self.dem.all_content_list)/len(self.dem.xml_paths)*90 )
+                download_progress = int(
+                    len(self.dem.all_content_list) / len(self.dem.xml_paths) * 90
+                )
                 self.feedback.setProgress(download_progress)
 
             # Stop process if output is a whole no data dem
