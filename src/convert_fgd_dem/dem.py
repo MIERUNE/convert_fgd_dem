@@ -279,7 +279,7 @@ class Dem:
 
     def _get_metadata_list(self):
         """Create a list of metadata
-        self.all_content_list is populated with elevation data in parent Contents thread
+        self.all_content_list is populated with elevation data in parent Contents converter
         """
 
         self.mesh_code_list = [item["mesh_code"] for item in self.all_content_list]
