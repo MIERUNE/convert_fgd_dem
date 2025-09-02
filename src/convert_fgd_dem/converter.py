@@ -17,7 +17,6 @@ class Converter:
         output_epsg="EPSG:4326",
         file_name="output.tif",
         rgbify=False,
-        sea_at_zero=False,
         feedback=None,
     ):
         """Initializer
@@ -28,7 +27,6 @@ class Converter:
             output_epsg (str): string of output epsg
             file_name (str): string of output filename
             rgbify (bool): whether to generate TerrainRGB or not
-            sea_at_zero (bool): whether to set sea area as 0 (if False, no Data)
             feedback (QgsFeedback): QgsFeedback object for progress dialog
 
         Notes:
@@ -46,7 +44,6 @@ class Converter:
         self.file_name: str = file_name
         self.rgbify: bool = rgbify
 
-        self.sea_at_zero = sea_at_zero
         self.dem = None  # to be populate with Dem class in "run" main function
 
         self.process_interrupted = False
@@ -182,7 +179,7 @@ class Converter:
         If value of rgbify is True, also generate terrainRGB
         """
         try:
-            self.dem = Dem(self.import_path, self.sea_at_zero)
+            self.dem = Dem(self.import_path)
 
             # Get DEM contents from input XML files
             if self.rgbify:
