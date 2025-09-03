@@ -7,11 +7,13 @@ from osgeo import gdal
 
 class DemInputXmlException(Exception):
     """Exception class about input DEM xml"""
+
     pass
 
 
 class DemOutputTiffException(Exception):
     """Exception class about input DEM xml"""
+
     pass
 
 

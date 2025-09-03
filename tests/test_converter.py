@@ -3,16 +3,16 @@ from pathlib import Path
 
 from osgeo import gdal, gdalconst
 
-from src.convert_fgd_dem import Converter
+from convert_fgd_dem.src.convert_fgd_dem.converter import Converter
 
 
 class TestConverter(unittest.TestCase):
     def test_converter(self):
-        thread = Converter(
+        converter = Converter(
             import_path=Path("./target_files/FG-GML-6441-32-DEM5A.zip"),
             output_path=Path("./test_generated_files"),
         )
-        thread.start()
+        converter.run()
         geotiff_path = Path("./test_generated_files/dem_epsg4326.tif")
         src = gdal.Open(str(geotiff_path.resolve()), gdalconst.GA_ReadOnly)
         x_length = src.RasterXSize

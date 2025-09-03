@@ -1,27 +1,16 @@
 from pathlib import Path
 
-from osgeo import gdal, osr
 import numpy as np
+from osgeo import gdal, osr
 
-from .helpers import (
-    DemOutputTiffException,
-    convert_height_to_R,
-    convert_height_to_G,
-    convert_height_to_B,
-    warp
-)
+from .helpers import (DemOutputTiffException, convert_height_to_B,
+                      convert_height_to_G, convert_height_to_R, warp)
 
 
 class Geotiff:
     """Generate GeoTiff"""
 
-    def __init__(
-            self,
-            geo_transform,
-            np_array,
-            x_length,
-            y_length,
-            output_path):
+    def __init__(self, geo_transform, np_array, x_length, y_length, output_path):
         """Initializer
 
         Args:
@@ -42,13 +31,7 @@ class Geotiff:
         self.y_length = y_length
         self.output_path: Path = output_path
 
-    def write_raster_bands(
-        self,
-        rgbify,
-        band_count,
-        dst_ds,
-        no_data_value=-9999
-    ):
+    def write_raster_bands(self, rgbify, band_count, dst_ds, no_data_value=-9999):
         """Write numpy array on raster bands
 
         Args:
@@ -77,14 +60,7 @@ class Geotiff:
             raster_band.WriteArray(self.np_array)
             raster_band.SetNoDataValue(no_data_value)
 
-    def create(
-        self,
-        band_count,
-        dtype,
-        file_name,
-        no_data_value=-9999,
-        rgbify=False
-    ):
+    def create(self, band_count, dtype, file_name, no_data_value=-9999, rgbify=False):
         """Create GeoTiff from elevation and coordinates, pixel size, grid size
 
         Args:
@@ -105,18 +81,13 @@ class Geotiff:
                 self.x_length,
                 self.y_length,
                 band_count,
-                dtype
+                dtype,
             )
             dst_ds.SetGeoTransform(self.geo_transform)
         except AttributeError:
             raise DemOutputTiffException("出力先パスに問題がある可能性があります")
 
-        self.write_raster_bands(
-            rgbify,
-            band_count,
-            dst_ds,
-            no_data_value
-        )
+        self.write_raster_bands(rgbify, band_count, dst_ds, no_data_value)
 
         ref = osr.SpatialReference()
         ref.ImportFromEPSG(4326)
