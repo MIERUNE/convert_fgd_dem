@@ -1,12 +1,40 @@
 import os
 import shutil
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as et  # nosec B405 - input is checked by _parse_xml
 import zipfile
 from pathlib import Path
+from xml.parsers import expat
 
 import numpy as np
 
 from .helpers import DemInputXmlException
+
+
+def _reject_doctype(*_args):
+    raise DemInputXmlException("DOCTYPE declarations are not allowed in DEM XML.")
+
+
+def _parse_xml(xml_path):
+    """Parse an XML file after refusing any DOCTYPE declaration
+
+    Entity expansion ("billion laughs") and external entities (XXE) both need a
+    DOCTYPE, which a DEM file has no use for. Rejecting it up front makes the
+    standard library parser safe without depending on defusedxml, which QGIS's
+    Python does not ship.
+
+    Args:
+        xml_path (Path): Path object of xml path
+
+    Returns:
+        xml.etree.ElementTree.Element: Root element
+    """
+    data = Path(xml_path).read_bytes()
+
+    guard = expat.ParserCreate()
+    guard.StartDoctypeDeclHandler = _reject_doctype
+    guard.Parse(data, True)
+
+    return et.fromstring(data)  # nosec B314 - DOCTYPE rejected above
 
 
 class Dem:
@@ -188,8 +216,7 @@ class Dem:
         }
 
         try:
-            tree = et.parse(xml_path)
-            root = tree.getroot()
+            root = _parse_xml(xml_path)
 
             mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
 
