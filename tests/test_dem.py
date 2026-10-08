@@ -67,8 +67,19 @@ class TestGetXmlContent(unittest.TestCase):
     def test_doctype_with_internal_entity_is_rejected(self):
         # Without the DOCTYPE guard this document is valid and yields mesh 64413277
         doctype = '<!DOCTYPE Dataset [<!ENTITY m "64413277">]>\n'
-        with self.assertRaises(DemInputXmlException):
+        with self.assertRaisesRegex(DemInputXmlException, "DOCTYPE"):
             self._get_xml_content(DEM_XML.format(doctype=doctype, mesh="&m;"))
+
+    def test_doctype_after_long_prolog_is_rejected(self):
+        # The guard reads the file in chunks: check a DOCTYPE past the first one
+        prolog = "<!-- " + "x" * 200_000 + " -->\n"
+        doctype = prolog + '<!DOCTYPE Dataset [<!ENTITY m "64413277">]>\n'
+        with self.assertRaisesRegex(DemInputXmlException, "DOCTYPE"):
+            self._get_xml_content(DEM_XML.format(doctype=doctype, mesh="&m;"))
+
+    def test_invalid_xml_raises_generic_error(self):
+        with self.assertRaisesRegex(DemInputXmlException, "Incorrect XML file"):
+            self._get_xml_content("<Dataset><unclosed></Dataset>")
 
 
 if __name__ == "__main__":
