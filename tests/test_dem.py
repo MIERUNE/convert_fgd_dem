@@ -42,7 +42,17 @@ DEM_XML = """<?xml version="1.0" encoding="utf-8"?>
 
 class TestDem(unittest.TestCase):
     def test_bounds_latlng(self):
-        dem_ins = Dem(Path("../DEM/FG-GML-6441-32-DEM5A.zip"))
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "dem.xml"
+            xml_path.write_text(
+                DEM_XML.format(doctype="", mesh="64413277"), encoding="utf-8"
+            )
+
+            # Same steps as Converter.run
+            dem_ins = Dem(xml_path)
+            dem_ins.all_content_list.append(dem_ins.get_xml_content(xml_path))
+            dem_ins.contents_to_array()
+
         bounds_latlng = {
             "lower_left": {"lat": 42.916666667, "lon": 141.25},
             "upper_right": {"lat": 43.0, "lon": 141.375},
