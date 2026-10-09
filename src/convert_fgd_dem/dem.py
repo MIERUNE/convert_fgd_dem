@@ -1,12 +1,59 @@
 import os
 import shutil
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as et  # nosec B405 # input is checked by _parse_xml
 import zipfile
 from pathlib import Path
+from xml.parsers import expat
 
 import numpy as np
 
 from .helpers import DemInputXmlException
+
+
+class _RootReached(Exception):
+    """Raised by the guard parser to stop once the prolog has been checked"""
+
+
+def _reject_doctype(*_args):
+    raise DemInputXmlException("DOCTYPE declarations are not allowed in DEM XML.")
+
+
+def _stop_at_root(*_args):
+    raise _RootReached
+
+
+def _parse_xml(xml_path):
+    """Parse an XML file after refusing any DOCTYPE declaration
+
+    Entity expansion ("billion laughs") and external entities (XXE) both need a
+    DOCTYPE, which a DEM file has no use for. Rejecting it up front makes the
+    standard library parser safe without depending on defusedxml, which QGIS's
+    Python does not ship.
+
+    A DOCTYPE can only come before the root element, so the guard stops there:
+    it only reads the prolog, not the whole document.
+
+    Args:
+        xml_path (Path): Path object of xml path
+
+    Returns:
+        xml.etree.ElementTree.Element: Root element
+
+    Raises:
+        DemInputXmlException: If the file declares a DOCTYPE
+    """
+    guard = expat.ParserCreate()
+    guard.StartDoctypeDeclHandler = _reject_doctype
+    guard.StartElementHandler = _stop_at_root
+
+    with open(xml_path, "rb") as f:
+        try:
+            guard.ParseFile(f)
+        except _RootReached:
+            pass
+
+        f.seek(0)
+        return et.parse(f).getroot()  # nosec B314 # DOCTYPE rejected above
 
 
 class Dem:
@@ -186,8 +233,7 @@ class Dem:
         }
 
         try:
-            tree = et.parse(xml_path)
-            root = tree.getroot()
+            root = _parse_xml(xml_path)
 
             mesh_code = int(root.find("dataset:DEM//dataset:mesh", name_space).text)
 
@@ -218,6 +264,8 @@ class Dem:
                 name_space,
             ).text
 
+        except DemInputXmlException:
+            raise
         except Exception:
             raise DemInputXmlException("Incorrect XML file.")
 
